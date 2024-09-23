@@ -3,7 +3,7 @@ import numpy
 import torch.nn as nn
 
 
-class Dense(nn.Module):
+class Linear(nn.Module):
     def __init__(self, input: int, output: int):
         super().__init__()
         self.x = torch.nn.Parameter(torch.randn(input, output))
