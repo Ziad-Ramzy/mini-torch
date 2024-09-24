@@ -4,7 +4,7 @@ import torch.nn as nn
 
 # Sigmoid activation function: squashes input to a range between 0 and 1.
 def sigmoid_fn(x: torch.tensor):
-    return 1/(1 - torch.exp(-x))
+    return 1/(1 + torch.exp(-x))
 
 
 # ReLU activation function: returns input directly if positive, otherwise returns 0.
