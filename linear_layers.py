@@ -41,9 +41,6 @@ class Bilinear(nn.Module):
         output += self.b
         return output
 
-
-# Hyperparameters
-
 # Hyperparameters
 batch_size = 64
 num_classes = 10  # For MNIST
