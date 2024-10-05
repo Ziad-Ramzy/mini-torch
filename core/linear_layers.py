@@ -5,29 +5,17 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import loss_fns
-
-
-class Linear(nn.Module):
-    def __init__(self, input: int, output: int):
-        super().__init__()
-        self.w = torch.nn.Parameter(torch.randn(input, output))
-        torch.nn.init.kaiming_uniform_(self.w)
-        self.b = torch.nn.Parameter(torch.zeros(output))
-
-    def forward(self, A: torch.tensor):
-        if A.shape[1] != self.x.shape[0]:
-            raise RuntimeError(f"Shape mismatch: Input shape {
-                               A.shape} can't broadcast with the weights {self.x.shape}")
-        y = A @ self.w + self.b
-        return y
+from mini_torch.core.Activations import RelU
+from torch.utils.data import Subset
+import mini_torch.core.loss_fns as loss_fns
 
 
 class Bilinear(nn.Module):
     def __init__(self, input1: int, input2: int, output: int):
         super().__init__()
         self.w = torch.nn.Parameter(torch.empty(output, input1, input2))
-        torch.nn.init.kaiming_uniform_(self.w)
+        torch.nn.init.kaiming_normal_(
+            self.w, mode="fan_in", nonlinearity="relu")
         self.b = torch.nn.Parameter(torch.zeros(output))
 
     def forward(self, X1: torch.Tensor, X2: torch.Tensor):
@@ -41,6 +29,28 @@ class Bilinear(nn.Module):
         output += self.b
         return output
 
+
+class Linear(nn.Module):
+    def __init__(self, input: int, output: int):
+        super().__init__()
+        self.w = torch.nn.Parameter(torch.randn(input, output))
+        # The resulting tensor will have values sampled from N(0,std**2)
+        # where std = gain/(fan_mode "in this case 'fan_in'.") ** 0.5
+        # and the gain for for relu is the the square root of 2
+        torch.nn.init.kaiming_normal_(
+            self.w, mode="fan_in", nonlinearity="relu")
+
+        self.b = torch.nn.Parameter(torch.zeros(output))
+
+    def forward(self, A: torch.Tensor):
+        if A.shape[1] != self.w.shape[0]:
+            raise RuntimeError(f"Shape mismatch: Input shape {
+                               A.shape} can't broadcast with the weights {self.x.shape}")
+        y = A @ self.w + self.b
+        return y
+
+
+"""
 # Hyperparameters
 batch_size = 64
 num_classes = 10  # For MNIST
@@ -53,17 +63,28 @@ transform = transforms.Compose([
     transforms.Normalize((0.5,), (0.5,))  # Normalize the images
 ])
 
+
 # Download and load the training and test datasets
 train_dataset = datasets.MNIST(
     root='./data', train=True, transform=transform, download=True)
+
+# train_size = int(0.2 * len(train_dataset))
+# indices = np.random.choice(len(train_dataset), train_size, replace=False)
+# subset_train_dataset = Subset(train_dataset, indices)
+
+# DataLoader for the subset
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+
 test_dataset = datasets.MNIST(
     root='./data', train=False, transform=transform, download=True)
 
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+test_loader = DataLoader(
+    test_dataset, batch_size=batch_size, shuffle=False)
 
 # Initialize the model
-model = Bilinear(input1=28*28, input2=28*28, output=num_classes)
+model = nn.Sequential(Linear(input=28*28, output=100), RelU(),
+                      Linear(100, 100), RelU(), Linear(100, output=num_classes))
 
 # Define loss function and optimizer
 criterion = loss_fns.CrossEntropy()
@@ -87,7 +108,7 @@ for epoch in tqdm(range(epochs)):
         optimizer.zero_grad()
 
         # Forward pass
-        outputs = model(images_flat, images_flat)
+        outputs = model(images_flat)
 
         # Calculate loss
         loss = criterion(outputs, targets)
@@ -123,3 +144,4 @@ with torch.no_grad():
 # Calculate accuracy
 accuracy = 100 * correct / total
 print(f'Test Accuracy: {accuracy:.2f}%')
+"""

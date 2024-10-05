@@ -56,10 +56,11 @@ class Adam(Optimizer):
                 param -= lr * m_hat / (torch.sqrt(v_hat) + eps)
 
 
+"""
 def get_datasets(n_train=1024, n_valid=1024,
                  input_shape=[3, 32, 32], target_shape=[],
                  n_classes=None):
-    """Construct and return random number datasets"""
+    # Construct and return random number datasets
     train_x = torch.randn([n_train] + input_shape)
     valid_x = torch.randn([n_valid] + input_shape)
     if n_classes is not None:
@@ -125,3 +126,4 @@ def test_gradient_descent():
 # Run the test
 if __name__ == "__main__":
     test_gradient_descent()
+"""
