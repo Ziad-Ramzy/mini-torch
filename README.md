@@ -7,10 +7,9 @@ Mini Torch is a lightweight library built on top of PyTorch, aimed at providing 
 - **Educational Focus**: Designed for learners and educators to understand key concepts in deep learning.
 - **Simple API**: A user-friendly interface for creating and training neural networks.
 - **Modular Components**: Easily customizable components that allow for quick experimentation.
-- **Integrated Visualizations**: Tools for visualizing training progress and model performance.
 
 ## Demo
 
 An example of a result obtained using the Mini Torch library:
 
-![Demo Result](C:\Users\Ziad\Desktop\output.png)
+![Demo Result](core/output.png)
